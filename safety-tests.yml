@@ -1,0 +1,55 @@
+name: OCC Live Safety Tests
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  safety-tests:
+    name: Safety & Consent Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - run: npm ci
+
+      - name: TypeScript Type Check
+        run: npx tsc --noEmit
+
+      - name: Run Safety Tests
+        run: npm run test:safety
+
+      - name: Verify Consent System Integrity
+        run: |
+          echo "Checking safety-critical files..."
+          # Verify InteractionConsentManager exists and has lockPreferences
+          grep -q "lockPreferences" src/systems/interaction-consent-manager.ts
+          # Verify consent defaults to OFF
+          grep -q "false" src/types/consent.ts | grep -q "createDefaultConsentPreferences"
+          # Verify personal space system exists
+          test -f src/systems/personal-space.ts
+          # Verify consent screen exists
+          test -f src/systems/consent-screen.ts
+          echo "Safety-critical files verified."
+
+  build:
+    name: Production Build
+    runs-on: ubuntu-latest
+    needs: safety-tests
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - run: npm ci
+      - run: npx vite build

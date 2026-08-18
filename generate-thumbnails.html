@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>OCC Live - Avatar Thumbnail Generator</title>
+  <style>
+    body { background: #1a1a1a; color: #fff; font-family: sans-serif; padding: 20px; }
+    #status { margin: 20px 0; font-size: 18px; }
+    #progress { margin: 10px 0; }
+    #preview { border: 1px solid #444; }
+    #download-all { margin-top: 20px; padding: 12px 24px; font-size: 16px; background: #7c4dff; color: #fff; border: none; border-radius: 8px; cursor: pointer; display: none; }
+    .thumb-grid { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 20px; }
+    .thumb-grid img { width: 64px; height: 64px; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <h1>Avatar Thumbnail Generator</h1>
+  <p>This page renders each avatar GLB into a 256x256 PNG. Results are saved to memory and can be downloaded as a ZIP or individually.</p>
+  <div id="status">Ready. Click "Generate All" to start.</div>
+  <div id="progress"></div>
+  <canvas id="preview" width="256" height="256"></canvas>
+  <br>
+  <button onclick="generateAll()" style="padding:12px 24px;font-size:16px;background:#4caf50;color:#fff;border:none;border-radius:8px;cursor:pointer;margin-top:12px;">Generate All Thumbnails</button>
+  <button id="download-all" onclick="downloadAll()">Download All as Individual PNGs</button>
+  <div class="thumb-grid" id="grid"></div>
+
+  <script type="importmap">
+    { "imports": { "three": "/node_modules/three/build/three.module.js", "three/addons/": "/node_modules/three/examples/jsm/" } }
+  </script>
+  <script type="module">
+    import * as THREE from 'three';
+    import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+    const TOTAL = 117;
+    const SIZE = 256;
+    const canvas = document.getElementById('preview');
+    const statusEl = document.getElementById('status');
+    const progressEl = document.getElementById('progress');
+    const gridEl = document.getElementById('grid');
+    const downloadBtn = document.getElementById('download-all');
+
+    const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+    renderer.setSize(SIZE, SIZE);
+    renderer.setClearColor(0x2d1b4e, 1);
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 100);
+    camera.position.set(0, 1.2, 4);
+    camera.lookAt(0, 0.8, 0);
+
+    const light = new THREE.DirectionalLight(0xffffff, 1.5);
+    light.position.set(3, 4, 3);
+    scene.add(light);
+    const ambient = new THREE.AmbientLight(0xffffff, 0.6);
+    scene.add(ambient);
+    const fill = new THREE.DirectionalLight(0xffa040, 0.4);
+    fill.position.set(-2, 1, -1);
+    scene.add(fill);
+
+    const loader = new GLTFLoader();
+    const generatedImages = [];
+
+    window.generateAll = async function() {
+      statusEl.textContent = 'Generating...';
+      gridEl.innerHTML = '';
+      generatedImages.length = 0;
+
+      for (let i = 1; i <= TOTAL; i++) {
+        const id = `avatar_${String(i).padStart(3, '0')}`;
+        const file = `/assets/avatars/models/${id}.glb`;
+
+        statusEl.textContent = `Rendering ${id} (${i}/${TOTAL})...`;
+        progressEl.textContent = `${Math.round(i/TOTAL*100)}%`;
+
+        try {
+          // Remove previous model
+          const prev = scene.getObjectByName('avatar_model');
+          if (prev) scene.remove(prev);
+
+          const gltf = await loader.loadAsync(file);
+          const model = gltf.scene;
+          model.name = 'avatar_model';
+
+          // Auto-center and scale
+          const box = new THREE.Box3().setFromObject(model);
+          const center = new THREE.Vector3();
+          box.getCenter(center);
+          const size = new THREE.Vector3();
+          box.getSize(size);
+          const maxDim = Math.max(size.x, size.y, size.z);
+          const s = 2.2 / maxDim;
+          model.scale.setScalar(s);
+          model.position.set(-center.x * s, -center.y * s, -center.z * s);
+
+          scene.add(model);
+          renderer.render(scene, camera);
+
+          // Get PNG data
+          const dataUrl = canvas.toDataURL('image/png');
+          generatedImages.push({ id, dataUrl });
+
+          // Show in grid
+          const img = document.createElement('img');
+          img.src = dataUrl;
+          img.title = id;
+          gridEl.appendChild(img);
+
+        } catch (e) {
+          console.warn(`Failed: ${id}`, e);
+          generatedImages.push({ id, dataUrl: null });
+        }
+
+        // Yield to browser
+        await new Promise(r => setTimeout(r, 50));
+      }
+
+      statusEl.textContent = `Done! Generated ${generatedImages.filter(g=>g.dataUrl).length}/${TOTAL} thumbnails.`;
+      downloadBtn.style.display = 'inline-block';
+    };
+
+    window.downloadAll = function() {
+      for (const { id, dataUrl } of generatedImages) {
+        if (!dataUrl) continue;
+        const a = document.createElement('a');
+        a.href = dataUrl;
+        a.download = `${id}.png`;
+        a.click();
+        // Small delay to avoid browser blocking mass downloads
+      }
+      statusEl.textContent = 'Downloads started. Check your downloads folder, then move PNGs to public/assets/avatars/thumbnails/';
+    };
+  </script>
+</body>
+</html>

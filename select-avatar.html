@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Choose Avatar</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: linear-gradient(135deg, #1a0a2e, #2d1b4e, #1a0a2e);
+  min-height: 100vh;
+  padding: 32px 24px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: #fff;
+}
+h1 { text-align: center; font-size: 28px; margin-bottom: 8px; }
+.subtitle { text-align: center; font-size: 14px; color: rgba(255,255,255,0.6); margin-bottom: 24px; }
+#grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 10px;
+  max-width: 960px;
+  margin: 0 auto;
+}
+.cell {
+  border-radius: 12px;
+  border: 3px solid transparent;
+  cursor: pointer;
+  overflow: hidden;
+}
+.cell:hover { border-color: rgba(124,77,255,0.5); transform: scale(1.03); }
+.cell.selected { border-color: #7c4dff; transform: scale(1.05); }
+.cell img { display: block; width: 100%; height: auto; }
+</style>
+</head>
+<body>
+<h1>Choose Your Avatar</h1>
+<p class="subtitle">Pick the avatar you'd like to use in OCC Live.</p>
+<div id="grid"></div>
+<script>
+const grid = document.getElementById('grid');
+for (let i = 1; i <= 190; i++) {
+  const cell = document.createElement('div');
+  cell.className = 'cell';
+  cell.innerHTML = `<img src="/assets/avatars/thumbnails/${i}.png" alt="" />`;
+  cell.onclick = () => {
+    document.querySelectorAll('.cell.selected').forEach(c => c.classList.remove('selected'));
+    cell.classList.add('selected');
+  };
+  grid.appendChild(cell);
+}
+</script>
+</body>
+</html>
