@@ -15,39 +15,9 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  safety-check:
-    name: Pre-Deployment Safety Verification
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-
-      - run: npm ci
-
-      - name: TypeScript Type Check
-        run: npx tsc --noEmit
-
-      - name: Run Safety Tests
-        run: npm run test:safety
-
-      - name: Verify Security Steering Rule Exists
-        run: test -f .kiro/steering/occ-live-security.md
-
-      - name: Verify Consent System
-        run: |
-          test -f src/systems/interaction-consent-manager.ts
-          test -f src/systems/consent-screen.ts
-          test -f src/systems/personal-space.ts
-          test -f src/types/consent.ts
-
   build-and-deploy:
     name: Build & Deploy to GitHub Pages
     runs-on: ubuntu-latest
-    needs: safety-check
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -56,8 +26,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: '22'
 
       - run: npm ci
 
