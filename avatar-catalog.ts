@@ -231,8 +231,8 @@ function buildCatalog(): AvatarModelEntry[] {
 
     catalog.push({
       id,
-      file: `/assets/avatars/models/${id}.glb`,
-      thumbnail: `/assets/avatars/thumbnails/${thumbnailIndex}.png`,
+      file: `https://pub-c8d7825ef99c46e28cb31aee23b53d38.r2.dev`,
+      thumbnail: `https://pub-c8d7825ef99c46e28cb31aee23b53d38.r2.dev`,
       mobility: inferMobility(i),
       tags: inferTags(i),
     });
