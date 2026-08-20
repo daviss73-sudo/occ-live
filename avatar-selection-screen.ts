@@ -8,7 +8,7 @@
  * - Grid of avatar thumbnail images (loaded efficiently)
  * - Single selection → "ENTER OCC LIVE" button
  * - No avatar names, player names, or ID labels exposed
- * - Responsive layout supporting 100+ avatars
+ * - Responsive layout supporting 25+ avatars
  * - Lazy image loading for performance
  * - Keyboard accessible (Tab + Enter)
  */
