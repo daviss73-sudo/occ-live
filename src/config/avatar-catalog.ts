@@ -1,250 +1,82 @@
 /**
- * OCC Live - Avatar Catalog (Part 5)
- * Production avatar library with 117 complete avatar models.
+ * OCC Live - Avatar Catalog
+ * Production avatar library with 25 avatar models hosted on Cloudflare R2.
  * Each avatar is a self-contained character — no assembly required.
  * Players select from visual thumbnails only; no names or labels exposed.
  *
- * Architecture supports 100+ avatars. Adding new avatars requires only
- * appending entries to this catalog — no core system changes needed.
+ * Adding new avatars: append to AVATAR_FILES array below.
+ * No other code changes needed.
  */
 
 import type { AvatarModelEntry } from '../types/pipeline.ts';
 
-// ─── Source File Mapping ─────────────────────────────────────────────────────
-// Maps internal avatar IDs (1-117) to their original GLB source filenames.
-// This is used internally for development reference only.
+// ─── Asset Base URL ──────────────────────────────────────────────────────────
+// Points to the Cloudflare R2 bucket where GLTF assets are hosted.
+// Change this single value to update all avatar asset URLs.
 
-const SOURCE_FILE_MAP: Record<number, string> = {
-  1: 'Smiling_Granny_with_Walker',
-  2: 'Grandma_and_dog',
-  3: 'Grandmother_Fi',
-  4: 'Gentle_Grandpa',
-  5: 'manual_Silver_Wheelchair',
-  6: 'Cozy_Grandpa_Miniatur',
-  7: 'electric_wheelchair',
-  8: 'Smiling_Forest_Grandp',
-  9: 'millenial_woman_Spider_tshirt',
-  10: 'adult_male_Blue_Paisley',
-  11: 'older_male',
-  12: 'older_woman',
-  13: 'older_man',
-  14: 'older_man_0810182708',
-  15: 'older_man_0810182734',
-  16: 'blk_male_0810182811',
-  17: 'older_woman_0810182851',
-  18: 'older_woman_0810182915',
-  19: 'lumberjack_male',
-  20: 'older_male_0810183112',
-  21: 'male_0810183148',
-  22: 'blk_male_Island_Buddy',
-  23: 'older_w_male_0810183245',
-  24: 'older_blk_wmn_0810183317',
-  25: 'older_ poc_male',
-  26: 'older_blk_male_0810183509',
-  27: 'male_poc',
-  28: 'blk_male_0810183610',
-  29: 'older_blk_wmn_0810183747',
-  30: 'older_male_0810183843',
-  31: 'older_wmn',
-  32: 'poc_male_0810184047',
-  33: 'w_wmn',
-  34: 'poc_male_0810184215',
-  35: 'older_blk_man',
-  36: 'young_alt',
-  37: 'young_alt_girl',
-  38: 'young_w_0810184514',
-  39: 'young_blk_m_0810184547',
-  40: 'young_blk_m_0810184633',
-  41: 'blk_girl_Blue_Sky_Wave',
-  42: 'young_fem_Peaceful_Joy',
-  43: 'young_poc_male_Star_Hoodie_Smile',
-  44: 'adult_wmn',
-  45: 'adult_poc_male_0810185102',
-  46: 'adult_blk_wmn_Charm',
-  47: 'adult_bald_blk_male',
-  48: 'adult_wmn_poc',
-  49: 'adult_w_wmn_Pink_Sweater',
-  50: 'adult_poc_male_0810185409',
-  51: 'young_blk_male',
-  52: 'young_fem_Hijab_Avatar',
-  53: 'young_poc_Cap',
-  54: 'young_poc_fem',
-  55: 'adult_blk_Cap',
-  56: 'adult_fem_Hijab_Avatar',
-  57: 'young_male_poc_Hoodie',
-  58: 'adult_blk_male_Flat_Cap',
-  59: 'young_fem_Hijab_Doll',
-  60: 'older_adult_wmn',
-  61: 'older_blk_male__0810190237',
-  62: 'older_blk_male_0810190339',
-  63: 'older_w_male_0810190408',
-  64: 'older_w_male_0810190436',
-  65: 'poc_walking_aid_male',
-  66: 'young_blk_fem',
-  67: 'young_poc_male_0810190634',
-  68: 'young_blk_male_crutches',
-  69: 'blk_wmn_artificial_leg',
-  70: 'young_w_male',
-  71: 'poc_young_fem',
-  72: 'young_blk_male_Pokémon_Fan',
-  73: 'young_w_fem_w_laptop',
-  74: 'young_poc_male-0810191110',
-  75: 'alt_poc_male_young',
-  76: 'Meshy_AI_Smoothie_Stroll',
-  77: 'Meshy_AI_Campus_Cool_Spark',
-  78: 'Meshy_AI_Sunshine_Stroll_0812134825',
-  79: 'Meshy_AI_LA_Cool_Girl',
-  80: 'Meshy_AI_Bright_Scholar',
-  81: 'Meshy_AI_Chill_Vibes_Ava',
-  82: 'Meshy_AI_Sunshine_Stroll_0812134900',
-  83: 'Meshy_AI_Joyful_Style',
-  84: 'Meshy_AI_Coffee_Stroll',
-  85: 'Meshy_AI_Peaceful_Smile',
-  86: 'Meshy_AI_Braided_Joy',
-  87: 'Meshy_AI_Denim_Smile',
-  88: 'Meshy_AI_Little_Dreamer',
-  89: 'Meshy_AI_Smiling_Plaid_Avatar',
-  90: 'Meshy_AI_Milo',
-  91: 'Meshy_AI_Smiling_Scholar',
-  92: 'Meshy_AI_Smiling_Dreadlocked_A',
-  93: 'Meshy_AI_Smiling_Cardigan_Avat',
-  94: 'Meshy_AI_Denim_Dreadlock_Smile',
-  95: 'Meshy_AI_Smiling_Varsity_Vibes',
-  96: 'Meshy_AI_Smiling_Mini_Gentlema',
-  97: 'Meshy_AI_Smiling_Braided_Explo',
-  98: 'Meshy_AI_Smiling_Blond_Avatar',
-  99: 'Meshy_AI_Redhead_Wanderer',
-  100: 'Meshy_AI_Sunny_Island_Smile',
-  101: 'Meshy_AI_Smiling_Boba_Buddy',
-  102: 'Meshy_AI_Smiling_Summer_Boy',
-  103: 'Meshy_AI_Smiling_Plaid_Shirt_A',
-  104: 'Meshy_AI_Little_Explorer',
-  105: 'Meshy_AI_Maya',
-  106: 'Meshy_AI_Sunny_Stroll',
-  107: 'Meshy_AI_Campus_Cuddlebot',
-  108: 'Meshy_AI_Bun_Blossom_Miniature',
-  109: 'Meshy_AI_Braided_Summer_Smile',
-  110: 'Meshy_AI_Sunny_Denim_Doll',
-  111: 'Meshy_AI_Sunny_Skater_Avatar',
-  112: 'Meshy_AI_Skater_in_Bloom',
-  113: 'Meshy_AI_Skater_Sunshine',
-  114: 'Meshy_AI_Sunny_Skater_Kid',
-  115: 'Meshy_AI_Sunny_Wanderer',
-  116: 'Meshy_AI_Sunny_Denim_Doll',
-  117: 'Meshy_AI_Sunny_Skater_Avatar',
-};
+const ASSET_BASE_URL = 'https://pub-c8d7825ef99c46e28cb31aee23b53d38.r2.dev';
 
-// ─── Mobility Type Inference ─────────────────────────────────────────────────
-// Avatars that use non-walking mobility types, inferred from source filenames.
+// ─── Avatar File List ────────────────────────────────────────────────────────
+// Exact filenames as they exist in the R2 bucket.
 
-const WHEELCHAIR_INDICES = [5, 7];       // manual wheelchair, electric wheelchair
-const WALKING_AID_INDICES = [1, 65, 68]; // walker, walking aid, crutches
+const AVATAR_FILES: string[] = [
+  '-mxbOhJmdfZ26AGLXfsyq_1787240481906(1).gltf',
+  '-pRV3ePnTyICQbM9NCwMT_1787237999997(1).gltf',
+  '0QNJI8oYC1-GyqUNxrAPd_1787238272469(1).gltf',
+  '1FEWOPVB5pZWmfYX9-srh_1787240584218.gltf',
+  '2SzD5Il4TILByIAjsN3eA_1787238339639(1).gltf',
+  '4NK6WMgrHI_tilyYpgVYv_1787240816455(1).gltf',
+  '4WxGm6xlH_-bkpjxO-Gly_1787240760981.gltf',
+  '4m3U2YmOsVWwQsP6uGgnA_1787240438818(1).gltf',
+  '69BHZQqgrCSD7raXb_bHh_1787240712356.gltf',
+  '6xnjk11NDqgOZE-P1JF-N_1787238853248.gltf',
+  '7E_FZamphhXbaLcvLs849_1787240311650(1).gltf',
+  '7PAwEO7-al-UYpEsedOtl_1787237583086(1).gltf',
+  'AIKRYxFuYI7stAI8oIJ4q_1787237668845(1).gltf',
+  'EanEt85-X7M3MI5JHw_qO_1787238393726(1).gltf',
+  'L2Hv3wSEL1JwD58OVkOwN_1787237943908(1).gltf',
+  'OiTyokmco7n9cxhFmzfjP_1787240107919.gltf',
+  'OiWBGWAO6fmrkCyrYq2mk_1787237511540(1).gltf',
+  'P9E1shFR1MkalQHJyl1SK_1787237846308(1).gltf',
+  'PmECIR2Kie626oPxLigIX_1787240401870.gltf',
+  'V-T3B01rEQ2A_A6bad7b4_1787240522223.gltf',
+  'XIGftsfzaoMu1ucpj92zg_1787238129806.gltf',
+  'h3yZ3zmnwn7HjFfSxZc70_1787238192757(1).gltf',
+  'iI5MFU5AnPNgAC9yexuJX_1787236787161.gltf',
+  'j72G1AC3b3Q05M-EE4U___1787238572210(1).gltf',
+  'jiQB2KHgCDncYxvcUYPkO_1787238774787.gltf',
+];
 
-/**
- * Infer the mobility type for an avatar based on its index.
- * Most avatars are 'walking'. Wheelchair avatars are explicitly tagged.
- */
-function inferMobility(index: number): 'walking' | 'wheelchair' {
-  if (WHEELCHAIR_INDICES.includes(index)) return 'wheelchair';
+// ─── Mobility Type ───────────────────────────────────────────────────────────
+// All current avatars are walking. Update this if wheelchair/mobility-aid
+// avatars are added later.
+
+function inferMobility(_index: number): 'walking' | 'wheelchair' {
   return 'walking';
-}
-
-// ─── Tags for Filtering (Internal Development Use) ───────────────────────────
-// Tags are never shown to players. They assist developers and future features.
-
-function inferTags(index: number): string[] {
-  const tags: string[] = [];
-  const source = SOURCE_FILE_MAP[index] ?? '';
-
-  // Age indicators
-  if (source.includes('older') || source.includes('Grandp') || source.includes('Grandm') || source.includes('Granny')) {
-    tags.push('older');
-  } else if (source.includes('young') || source.includes('alt_poc_male_young')) {
-    tags.push('young');
-  } else if (source.includes('adult') || source.includes('millenial')) {
-    tags.push('adult');
-  }
-
-  // Accessibility indicators
-  if (WHEELCHAIR_INDICES.includes(index)) tags.push('wheelchair');
-  if (WALKING_AID_INDICES.includes(index)) tags.push('mobility_aid');
-  if (source.includes('artificial_leg')) tags.push('prosthetic');
-
-  // Cultural indicators
-  if (source.includes('Hijab')) tags.push('hijab');
-
-  return tags;
-}
-
-// ─── Thumbnail Mapping ───────────────────────────────────────────────────────
-// 190 PNG thumbnails map to 117 GLB models.
-// Some avatars have multiple thumbnail angles/views.
-// The primary thumbnail for each GLB is its index (1-117).
-// Additional thumbnails (118-190) are alternate views assigned round-robin.
-
-/**
- * Get the primary thumbnail index for a given avatar model index.
- * Each avatar model gets at least one dedicated thumbnail matching its index.
- */
-function getPrimaryThumbnailIndex(avatarIndex: number): number {
-  return avatarIndex; // 1:1 mapping for indices 1-117
-}
-
-/**
- * Get all thumbnail indices for a given avatar model index.
- * Includes the primary plus any alternates from the 118-190 range.
- */
-function getAllThumbnailIndices(avatarIndex: number): number[] {
-  const indices = [avatarIndex];
-  // Alternate thumbnails (118-190) cycle across the 117 avatars
-  const EXTRA_THUMBNAILS = 190 - 117; // 73 extra
-  const extraStart = 118;
-
-  for (let i = 0; i < EXTRA_THUMBNAILS; i++) {
-    const mappedAvatar = (i % 117) + 1;
-    if (mappedAvatar === avatarIndex) {
-      indices.push(extraStart + i);
-    }
-  }
-  return indices;
 }
 
 // ─── Catalog Builder ─────────────────────────────────────────────────────────
 
-/** Total number of production avatar models */
-const TOTAL_AVATARS = 117;
-
-/** Total number of available thumbnail images */
-export const TOTAL_THUMBNAILS = 190;
-
-/**
- * Build the complete avatar catalog from the 117 production GLBs.
- * Each entry is a complete, self-contained character.
- * No assembly or customization required by the player.
- */
 function buildCatalog(): AvatarModelEntry[] {
-  const catalog: AvatarModelEntry[] = [];
-
-  for (let i = 1; i <= TOTAL_AVATARS; i++) {
-    const id = `avatar_${i.toString().padStart(3, '0')}`;
-    const thumbnailIndex = getPrimaryThumbnailIndex(i);
-
-    catalog.push({
+  return AVATAR_FILES.map((filename, index) => {
+    const id = `avatar_${(index + 1).toString().padStart(3, '0')}`;
+    return {
       id,
-      file: `/assets/avatars/models/${id}.glb`,
-      thumbnail: `/assets/avatars/thumbnails/${thumbnailIndex}.png`,
-      mobility: inferMobility(i),
-      tags: inferTags(i),
-    });
-  }
-
-  return catalog;
+      file: `${ASSET_BASE_URL}/${filename}`,
+      thumbnail: `${ASSET_BASE_URL}/${filename}`,
+      mobility: inferMobility(index),
+      tags: [],
+    };
+  });
 }
 
 // ─── Exported Catalog & Utilities ────────────────────────────────────────────
 
-/** The complete production avatar catalog — all 117 selectable avatars */
+/** The complete production avatar catalog */
 export const avatarCatalog: AvatarModelEntry[] = buildCatalog();
+
+/** Total number of available thumbnail images */
+export const TOTAL_THUMBNAILS = AVATAR_FILES.length;
 
 /** Get an avatar entry by its ID (e.g. 'avatar_017') */
 export function getAvatarById(id: string): AvatarModelEntry | undefined {
@@ -253,7 +85,7 @@ export function getAvatarById(id: string): AvatarModelEntry | undefined {
 
 /** Get an avatar entry by its numeric index (1-based) */
 export function getAvatarByIndex(index: number): AvatarModelEntry | undefined {
-  if (index < 1 || index > TOTAL_AVATARS) return undefined;
+  if (index < 1 || index > AVATAR_FILES.length) return undefined;
   return avatarCatalog[index - 1];
 }
 
@@ -270,16 +102,4 @@ export function getAvatarsByMobility(mobility: 'walking' | 'wheelchair'): Avatar
 /** Get avatars filtered by tag */
 export function getAvatarsByTag(tag: string): AvatarModelEntry[] {
   return avatarCatalog.filter(a => a.tags.includes(tag));
-}
-
-/** Get the source reference filename for an avatar (dev use only) */
-export function getSourceReference(index: number): string {
-  return SOURCE_FILE_MAP[index] ?? 'unknown';
-}
-
-/** Get all thumbnail paths for an avatar (primary + alternates) */
-export function getThumbnailPaths(avatarIndex: number): string[] {
-  return getAllThumbnailIndices(avatarIndex).map(
-    idx => `/assets/avatars/thumbnails/${idx}.png`
-  );
 }
