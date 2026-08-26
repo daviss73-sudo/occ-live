@@ -16,6 +16,7 @@
 
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 import type { AvatarModelEntry } from '../types/pipeline.ts';
 
 // ─── Loading State ───────────────────────────────────────────────────────────
@@ -49,6 +50,14 @@ export class AvatarLibrary {
 
   constructor(entries: AvatarModelEntry[], callbacks?: AvatarLibraryCallbacks) {
     this.loader = new GLTFLoader();
+
+    // Set up Draco decoder for compressed GLTF models (Meshy exports use Draco)
+    const dracoLoader = new DRACOLoader();
+    dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.7/');
+    dracoLoader.setDecoderConfig({ type: 'js' });
+    dracoLoader.preload();
+    (this.loader as any).setDRACOLoader(dracoLoader);
+
     this.callbacks = callbacks ?? {};
     this.registerAll(entries);
   }
