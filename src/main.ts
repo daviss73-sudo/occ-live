@@ -370,6 +370,8 @@ avatarLibrary.loadAvatar(selectedAvatar.id).then((result) => {
   if (result.state === 'loaded' && result.mesh) {
     // Replace placeholder with production GLB
     avatarMesh = result.mesh;
+        avatarMesh.scale.set(15, 15, 15); // Scale Meshy GLTF models to match world units
+
     playerController.setAvatarMesh(avatarMesh);
     appearanceManager.setAvatarGroup(avatarMesh);
     animStateMachine.attach(avatarMesh);
