@@ -250,7 +250,7 @@ export function showAvatarSelectionScreen(catalog: AvatarModelEntry[]): Promise<
 
       // Thumbnail image with lazy loading
       const img = document.createElement('img');
-      img.src = entry.thumbnail ?? `/assets/avatars/thumbnails/${i + 1}.png`;
+      img.src = entry.thumbnail;
       img.alt = ''; // Intentionally empty — no identifying labels per spec
       img.loading = 'lazy';
       img.draggable = false;
@@ -262,8 +262,7 @@ export function showAvatarSelectionScreen(catalog: AvatarModelEntry[]): Promise<
       };
       img.onerror = () => {
         // Fallback: try alternative thumbnail path
-        img.src = `/assets/avatars/thumbnails/${i + 1}.png`;
-        img.onerror = () => {
+                img.onerror = () => {
           // Final fallback: show colored placeholder
           placeholder.innerHTML = '';
           placeholder.style.background = `hsl(${(i * 37) % 360}, 40%, 25%)`;
