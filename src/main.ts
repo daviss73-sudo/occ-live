@@ -366,6 +366,7 @@ wayfindingSystem.createPlaceholderSign([-10, 0, 10], [0, 0.3, 0]);
 // The placeholder mesh is used until the production model is ready.
 
 avatarLibrary.loadAvatar(selectedAvatar.id).then((result) => {
+  console.log('[OCC Live] Avatar load result:', result?.state, result?.error);
   if (result.state === 'loaded' && result.mesh) {
     // Replace placeholder with production GLB
     avatarMesh = result.mesh;
@@ -391,8 +392,10 @@ avatarLibrary.loadAvatar(selectedAvatar.id).then((result) => {
 
     console.log(`[OCC Live] Production avatar loaded: ${selectedAvatar.id}`);
   } else {
-    console.warn(`[OCC Live] Failed to load avatar GLB, using placeholder: ${result.error}`);
+    console.warn(`[OCC Live] Failed to load avatar GLB, using placeholder: ${result?.error}`);
   }
+}).catch((err) => {
+  console.error('[OCC Live] Avatar load EXCEPTION:', err);
 });
 
 // ─── Part 5: Lazy River + Wetsuit Integration ────────────────────────────────
