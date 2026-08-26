@@ -44,16 +44,20 @@ export const worldConfig: WorldConfig = {
 
   // ─── Assets (placeholders until Meshy .glb imports) ──────────────────────
   assets: [
-    { id: 'main_stage', type: 'architecture', file: '/assets/world/main-union/architecture/main-stage.glb', position: [0, 0, -30], rotation: [0, 0, 0], scale: [1, 1, 1], zoneId: 'main_stage', enabled: false },
-    { id: 'cafe', type: 'architecture', file: '/assets/world/main-union/architecture/cafe.glb', position: [-25, 0, -10], rotation: [0, 0, 0], scale: [1, 1, 1], zoneId: 'cafe_terrace', enabled: false },
+     assets: [
+    { id: 'main_stage', type: 'architecture', file: 'https://pub-c8d7825ef99c46e28cb31aee23b53d38.r2.dev/main%20stage.gltf', position: [0, 0, -30], rotation: [0, 0, 0], scale: [15, 15, 15], zoneId: 'main_stage', enabled: true },
+    { id: 'cafe', type: 'architecture', file: 'https://pub-c8d7825ef99c46e28cb31aee23b53d38.r2.dev/cafe.gltf', position: [-25, 0, -10], rotation: [0, 0, 0], scale: [15, 15, 15], zoneId: 'cafe_terrace', enabled: true },
     { id: 'beanbag_lawn', type: 'furniture', file: '/assets/world/main-union/furniture/beanbag-lawn.glb', position: [-15, 0, 5], rotation: [0, 0, 0], scale: [1, 1, 1], zoneId: 'beanbag_lawn', enabled: false },
-    { id: 'swing_set', type: 'recreation', file: '/assets/world/main-union/recreation/swing.glb', position: [-20, 0, -20], rotation: [0, 0, 0], scale: [1, 1, 1], zoneId: 'swing_zone', enabled: false },
-    { id: 'ball_pit', type: 'recreation', file: '/assets/world/main-union/recreation/ball-pit.glb', position: [25, 0, -10], rotation: [0, 0, 0], scale: [1, 1, 1], zoneId: 'ball_pit', enabled: false },
-    { id: 'river', type: 'water', file: '/assets/world/main-union/water/river.glb', position: [0, -0.5, 15], rotation: [0, 0, 0], scale: [1, 1, 1], zoneId: 'river_lounge', enabled: false },
-    { id: 'firepit', type: 'furniture', file: '/assets/world/main-union/furniture/firepit.glb', position: [20, 0, 10], rotation: [0, 0, 0], scale: [1, 1, 1], zoneId: 'firepit_lounge', enabled: false },
+    { id: 'swing_set', type: 'recreation', file: 'https://pub-c8d7825ef99c46e28cb31aee23b53d38.r2.dev/swing.gltf', position: [-20, 0, -20], rotation: [0, 0, 0], scale: [15, 15, 15], zoneId: 'swing_zone', enabled: true },
+    { id: 'ball_pit', type: 'recreation', file: 'https://pub-c8d7825ef99c46e28cb31aee23b53d38.r2.dev/ball%20pit.gltf', position: [25, 0, -10], rotation: [0, 0, 0], scale: [15, 15, 15], zoneId: 'ball_pit', enabled: true },
+    { id: 'river', type: 'water', file: 'https://pub-c8d7825ef99c46e28cb31aee23b53d38.r2.dev/lazy%20river%20segment%201.gltf', position: [0, -0.5, 15], rotation: [0, 0, 0], scale: [15, 15, 15], zoneId: 'river_lounge', enabled: true },
+    { id: 'firepit', type: 'furniture', file: 'https://pub-c8d7825ef99c46e28cb31aee23b53d38.r2.dev/fire%20pit.gltf', position: [20, 0, 10], rotation: [0, 0, 0], scale: [15, 15, 15], zoneId: 'firepit_lounge', enabled: true },
+    { id: 'photobooth', type: 'recreation', file: 'https://pub-c8d7825ef99c46e28cb31aee23b53d38.r2.dev/photo%20booth.gltf', position: [12, 0, -5], rotation: [0, 0, 0], scale: [15, 15, 15], zoneId: 'main_plaza', enabled: true },
     { id: 'portal_skyline', type: 'portals', file: '/assets/world/main-union/portals/portal-skyline.glb', position: [-30, 0, -35], rotation: [0, 0.5, 0], scale: [1, 1, 1], zoneId: 'portal_skyline', enabled: false },
     { id: 'portal_pulse', type: 'portals', file: '/assets/world/main-union/portals/portal-pulse.glb', position: [30, 0, -35], rotation: [0, -0.5, 0], scale: [1, 1, 1], zoneId: 'portal_pulse', enabled: false },
     { id: 'wayfinding_sign', type: 'signage', file: '/assets/world/main-union/signage/wayfinding-sign.glb', position: [-10, 0, 10], rotation: [0, 0.3, 0], scale: [1, 1, 1], enabled: false },
+  ],
+
   ],
 
   // ─── Zones ───────────────────────────────────────────────────────────────
