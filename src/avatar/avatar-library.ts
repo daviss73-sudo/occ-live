@@ -1,12 +1,13 @@
 /**
  * OCC Live - Avatar Library (Part 5)
  * Core registry for the production avatar library. Manages loading,
- * caching, querying, and lifecycle of complete avatar GLB models.
+ * caching, querying, and lifecycle of complete avatar models.
  *
  * Architecture:
  * - Supports 100+ avatars (no hard cap)
- * - Lazy-loads GLBs on demand (not all at once)
+ * - Lazy-loads GLTFs on demand (not all at once)
  * - Caches loaded models for clone reuse
+ * - Draco decompression for compressed Meshy models
  * - New avatars added via catalog only — no core changes needed
  * - Integrates with Avatar Variation System and Temporary Outfit System
  *
@@ -54,9 +55,8 @@ export class AvatarLibrary {
     // Set up Draco decoder for compressed GLTF models (Meshy exports use Draco)
     const dracoLoader = new DRACOLoader();
     dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.7/');
-    dracoLoader.setDecoderConfig({ type: 'js' });
     dracoLoader.preload();
-    (this.loader as any).setDRACOLoader(dracoLoader);
+    this.loader.setDRACOLoader(dracoLoader);
 
     this.callbacks = callbacks ?? {};
     this.registerAll(entries);
@@ -73,20 +73,14 @@ export class AvatarLibrary {
     this.callbacks.onCatalogUpdated?.(this.catalog.size);
   }
 
-  /**
-   * Add a new avatar to the library at runtime.
-   * Supports expansion without modifying core systems.
-   */
+  /** Add a new avatar to the library at runtime */
   addAvatar(entry: AvatarModelEntry): void {
     this.catalog.set(entry.id, entry);
     this.loadStates.set(entry.id, 'unloaded');
     this.callbacks.onCatalogUpdated?.(this.catalog.size);
   }
 
-  /**
-   * Remove an avatar from the library (disable it).
-   * Does not unload cached meshes (they may be in use).
-   */
+  /** Remove an avatar from the library */
   removeAvatar(id: string): boolean {
     if (!this.catalog.has(id)) return false;
     this.catalog.delete(id);
@@ -97,37 +91,30 @@ export class AvatarLibrary {
 
   // ─── Querying ──────────────────────────────────────────────────────────
 
-  /** Get an avatar entry by ID */
   getEntry(id: string): AvatarModelEntry | undefined {
     return this.catalog.get(id);
   }
 
-  /** Get all registered avatar entries */
   getAllEntries(): AvatarModelEntry[] {
     return Array.from(this.catalog.values());
   }
 
-  /** Get the total number of registered avatars */
   getCount(): number {
     return this.catalog.size;
   }
 
-  /** Get all available avatar IDs */
   getAvailableIds(): string[] {
     return Array.from(this.catalog.keys());
   }
 
-  /** Filter entries by mobility type */
   getByMobility(mobility: 'walking' | 'wheelchair'): AvatarModelEntry[] {
     return this.getAllEntries().filter(e => e.mobility === mobility);
   }
 
-  /** Filter entries by tag */
   getByTag(tag: string): AvatarModelEntry[] {
     return this.getAllEntries().filter(e => e.tags.includes(tag));
   }
 
-  /** Check if an avatar ID exists in the library */
   has(id: string): boolean {
     return this.catalog.has(id);
   }
@@ -179,19 +166,13 @@ export class AvatarLibrary {
     return { avatarId: id, state: 'error', mesh: null, error: `Failed to load ${entry.file}` };
   }
 
-  /**
-   * Preload an avatar into cache without returning it.
-   * Useful for background loading (e.g. loading nearby players' avatars).
-   */
+  /** Preload an avatar into cache without returning it */
   async preload(id: string): Promise<boolean> {
     const result = await this.loadAvatar(id);
     return result.state === 'loaded';
   }
 
-  /**
-   * Preload multiple avatars in parallel.
-   * Useful for preloading popular or nearby avatars.
-   */
+  /** Preload multiple avatars in parallel */
   async preloadBatch(ids: string[]): Promise<Map<string, boolean>> {
     const results = new Map<string, boolean>();
     const promises = ids.map(async (id) => {
@@ -202,32 +183,27 @@ export class AvatarLibrary {
     return results;
   }
 
-  /** Get the load state of an avatar */
   getLoadState(id: string): AvatarLoadState {
     return this.loadStates.get(id) ?? 'unloaded';
   }
 
-  /** Check if an avatar is loaded and cached */
   isLoaded(id: string): boolean {
     return this.cache.has(id);
   }
 
   // ─── Cache Management ──────────────────────────────────────────────────
 
-  /** Get a fresh clone of a cached avatar (for spawning additional instances) */
   getClone(id: string): THREE.Group | null {
     const cached = this.cache.get(id);
     if (!cached) return null;
     return this.cloneAvatar(cached, id);
   }
 
-  /** Evict a specific avatar from cache (frees memory) */
   evict(id: string): void {
     this.cache.delete(id);
     this.loadStates.set(id, 'unloaded');
   }
 
-  /** Evict all avatars from cache */
   evictAll(): void {
     this.cache.clear();
     for (const id of this.catalog.keys()) {
@@ -235,22 +211,16 @@ export class AvatarLibrary {
     }
   }
 
-  /** Get the number of currently cached avatars */
   getCacheSize(): number {
     return this.cache.size;
   }
 
-  /** Get IDs of all cached avatars */
   getCachedIds(): string[] {
     return Array.from(this.cache.keys());
   }
 
   // ─── Animation Compatibility ───────────────────────────────────────────
 
-  /**
-   * Test if a loaded avatar mesh has a compatible animation rig.
-   * Returns info about the mesh structure for debugging.
-   */
   getAvatarMeshInfo(id: string): { hasSkeleton: boolean; boneCount: number; meshCount: number } | null {
     const cached = this.cache.get(id);
     if (!cached) return null;
@@ -259,15 +229,14 @@ export class AvatarLibrary {
     let boneCount = 0;
     let meshCount = 0;
 
-    cached.traverse((child) => {
-      if ((child as THREE.SkinnedMesh).isSkinnedMesh) {
+    cached.traverse((child: any) => {
+      if (child.isSkinnedMesh) {
         hasSkeleton = true;
-        const skinned = child as THREE.SkinnedMesh;
-        if (skinned.skeleton) {
-          boneCount = Math.max(boneCount, skinned.skeleton.bones.length);
+        if (child.skeleton) {
+          boneCount = Math.max(boneCount, child.skeleton.bones.length);
         }
       }
-      if ((child as THREE.Mesh).isMesh) {
+      if (child.isMesh) {
         meshCount++;
       }
     });
@@ -275,11 +244,6 @@ export class AvatarLibrary {
     return { hasSkeleton, boneCount, meshCount };
   }
 
-  /**
-   * Check animation compatibility for a loaded avatar.
-   * Logs warnings for potential issues but never prevents the avatar
-   * from being used (graceful degradation per spec Section 13).
-   */
   checkAnimationCompatibility(id: string): { compatible: boolean; warnings: string[] } {
     const info = this.getAvatarMeshInfo(id);
     if (!info) return { compatible: false, warnings: ['Avatar not loaded'] };
@@ -294,19 +258,16 @@ export class AvatarLibrary {
       warnings.push(`Avatar ${id} has no visible meshes`);
     }
 
-    // Always compatible per spec — never block an avatar from entering the world
     return { compatible: true, warnings };
   }
 
   // ─── Private ───────────────────────────────────────────────────────────
 
-  /** Actually load a GLB file and cache the result */
   private async doLoad(entry: AvatarModelEntry): Promise<THREE.Group | null> {
     try {
       const gltf = await this.loader.loadAsync(entry.file);
       const scene = gltf.scene as THREE.Group;
 
-      // Tag the loaded mesh with metadata
       scene.name = `avatar_model_${entry.id}`;
       scene.userData = {
         isProductionAvatar: true,
@@ -315,15 +276,13 @@ export class AvatarLibrary {
         tags: entry.tags,
       };
 
-      // Enable shadows on all meshes
-      scene.traverse((child) => {
-        if ((child as THREE.Mesh).isMesh) {
+      scene.traverse((child: any) => {
+        if (child.isMesh) {
           child.castShadow = true;
           child.receiveShadow = true;
         }
       });
 
-      // Cache the original (clones are derived from this)
       this.cache.set(entry.id, scene);
       this.loadStates.set(entry.id, 'loaded');
       this.callbacks.onAvatarLoaded?.(entry.id, scene);
@@ -338,28 +297,19 @@ export class AvatarLibrary {
     }
   }
 
-  /** Clone a cached avatar mesh with proper deep copy of materials */
   private cloneAvatar(source: THREE.Group, id: string): THREE.Group {
     const clone = source.clone(true);
     clone.name = `avatar_instance_${id}_${Date.now()}`;
 
-    // Deep-clone materials so AVS color changes don't affect the cache original
-    clone.traverse((child) => {
-      if ((child as THREE.Mesh).isMesh) {
-        const mesh = child as THREE.Mesh;
-        if (Array.isArray(mesh.material)) {
-          mesh.material = mesh.material.map(m => m.clone());
-        } else if (mesh.material) {
-          mesh.material = mesh.material.clone();
+    clone.traverse((child: any) => {
+      if (child.isMesh) {
+        if (Array.isArray(child.material)) {
+          child.material = child.material.map((m: any) => m.clone());
+        } else if (child.material) {
+          child.material = child.material.clone();
         }
       }
     });
-
-    clone.userData = {
-      ...source.userData,
-      isClone: true,
-      clonedAt: Date.now(),
-    };
 
     return clone;
   }

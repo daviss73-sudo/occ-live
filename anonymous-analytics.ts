@@ -439,6 +439,80 @@ export class AnonymousAnalytics {
     const snapshot = this.buildSnapshot();
     this.callbacks.onFlush?.(snapshot);
     this.lastFlushTime = Date.now();
+
+    // Persist to localStorage for admin dashboard access
+    try {
+      const existing = localStorage.getItem('occ_live_analytics');
+      const existingData = existing ? JSON.parse(existing) : null;
+      const merged = this.mergeForDashboard(existingData, snapshot);
+      localStorage.setItem('occ_live_analytics', JSON.stringify(merged));
+    } catch {
+      // localStorage may be unavailable — non-critical
+    }
+  }
+
+  /** Merge a snapshot into the persisted dashboard data */
+  private mergeForDashboard(existing: any, snapshot: AggregateSnapshot): any {
+    if (!existing) {
+      return {
+        currentConcurrent: this.currentConcurrent,
+        peakConcurrent: this.peakConcurrent,
+        totalSessions: snapshot.totalSessions,
+        todaySessions: snapshot.totalSessions,
+        avgSessionDuration: snapshot.avgSessionDuration,
+        totalErrors: snapshot.totalDisconnects,
+        totalDisconnects: snapshot.totalDisconnects,
+        districtTransitionCounts: snapshot.districtTransitionCounts,
+        activityCounts: snapshot.activityCounts,
+        avatarSelectionCounts: snapshot.avatarSelectionCounts,
+        zoneVisitCounts: snapshot.zoneVisitCounts,
+        avgTimePerZone: snapshot.avgTimePerZone,
+        photoboothStats: snapshot.photoboothStats,
+        lazyRiverEntries: snapshot.lazyRiverEntries,
+        emotesCounts: {},
+        eventAttendanceCounts: snapshot.eventAttendanceCounts,
+        errorCounts: snapshot.errorCounts,
+        entryByHour: snapshot.entryByHour,
+        exitByHour: snapshot.exitByHour,
+        lastUpdated: Date.now(),
+      };
+    }
+
+    // Merge counts
+    const mergeCounts = (a: Record<string, number>, b: Record<string, number>) => {
+      const result = { ...(a || {}) };
+      for (const [key, value] of Object.entries(b || {})) {
+        result[key] = (result[key] || 0) + (value as number);
+      }
+      return result;
+    };
+
+    return {
+      currentConcurrent: this.currentConcurrent,
+      peakConcurrent: Math.max(existing.peakConcurrent || 0, this.peakConcurrent),
+      totalSessions: (existing.totalSessions || 0) + snapshot.totalSessions,
+      todaySessions: (existing.todaySessions || 0) + snapshot.totalSessions,
+      avgSessionDuration: snapshot.avgSessionDuration || existing.avgSessionDuration,
+      totalErrors: (existing.totalErrors || 0) + Object.values(snapshot.errorCounts || {}).reduce((a: number, b: any) => a + b, 0),
+      totalDisconnects: (existing.totalDisconnects || 0) + snapshot.totalDisconnects,
+      districtTransitionCounts: mergeCounts(existing.districtTransitionCounts, snapshot.districtTransitionCounts),
+      activityCounts: mergeCounts(existing.activityCounts, snapshot.activityCounts),
+      avatarSelectionCounts: mergeCounts(existing.avatarSelectionCounts, snapshot.avatarSelectionCounts),
+      zoneVisitCounts: mergeCounts(existing.zoneVisitCounts, snapshot.zoneVisitCounts),
+      avgTimePerZone: snapshot.avgTimePerZone || existing.avgTimePerZone,
+      photoboothStats: {
+        solo: (existing.photoboothStats?.solo || 0) + (snapshot.photoboothStats?.solo || 0),
+        group: (existing.photoboothStats?.group || 0) + (snapshot.photoboothStats?.group || 0),
+        totalSessions: (existing.photoboothStats?.totalSessions || 0) + (snapshot.photoboothStats?.totalSessions || 0),
+      },
+      lazyRiverEntries: (existing.lazyRiverEntries || 0) + snapshot.lazyRiverEntries,
+      emotesCounts: existing.emotesCounts || {},
+      eventAttendanceCounts: mergeCounts(existing.eventAttendanceCounts, snapshot.eventAttendanceCounts),
+      errorCounts: mergeCounts(existing.errorCounts, snapshot.errorCounts),
+      entryByHour: mergeCounts(existing.entryByHour, snapshot.entryByHour),
+      exitByHour: mergeCounts(existing.exitByHour, snapshot.exitByHour),
+      lastUpdated: Date.now(),
+    };
   }
 
   // ─── Lifecycle ─────────────────────────────────────────────────────────
