@@ -125,6 +125,7 @@ export const worldConfig: WorldConfig = {
     { id: 'info_kiosk', interactionType: 'enter', prompt: 'Information', radius: 2.5, animation: null, sound: null, cooldown: 0, position: [-8, 0, 8], zoneId: 'main_plaza', enabled: true },
     // Photobooth
     { id: 'photobooth_main', interactionType: 'enter', prompt: 'Photobooth', radius: 3, animation: null, sound: null, cooldown: 0, position: [12, 0, -5], zoneId: 'main_plaza', enabled: true },
+    { id: 'dance_off_pad', interactionType: 'play', prompt: 'Dance-Off', radius: 3, animation: null, sound: null, cooldown: 0, position: [5, 0, -26], zoneId: 'main_stage', enabled: true },
   ],
 
   // ─── NPCs (Part 6 Expanded) ──────────────────────────────────────────────
