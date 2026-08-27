@@ -1156,3 +1156,5 @@ console.log('[OCC Live] Access debug API via window.__OCC_LIVE__');
 console.log(`[OCC Live] Avatar Library: ${avatarCatalog.length} avatars | Events: ${sampleEvents.length} configured`);
 
 } // end initializeWorld
+
+
