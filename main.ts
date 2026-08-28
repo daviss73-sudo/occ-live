@@ -105,7 +105,7 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.0;
+renderer.toneMappingExposure = 1.3;
 document.getElementById('app')!.appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
@@ -116,7 +116,8 @@ const camera = new THREE.PerspectiveCamera(
 // ─── Evening Atmosphere (Golden Hour) ────────────────────────────────────────
 
 function setupLighting(): void {
-  const sunLight = new THREE.DirectionalLight(0xffa040, 1.5);
+  const sunLight = new THREE.DirectionalLight(0xffd0a0, 2.2);
+
   sunLight.position.set(-30, 20, -10);
   sunLight.castShadow = true;
   sunLight.shadow.mapSize.set(2048, 2048);
@@ -128,10 +129,12 @@ function setupLighting(): void {
   sunLight.shadow.camera.bottom = -50;
   scene.add(sunLight);
 
-  const ambientLight = new THREE.AmbientLight(0xffd4a0, 0.4);
+  const ambientLight = new THREE.AmbientLight(0xfff0e0, 0.9);
+
   scene.add(ambientLight);
 
-  const hemiLight = new THREE.HemisphereLight(0x87ceeb, 0x556b2f, 0.3);
+  const hemiLight = new THREE.HemisphereLight(0x87ceeb, 0x556b2f, 0.6);
+
   scene.add(hemiLight);
 
   scene.background = new THREE.Color(0x1a0a2e);
