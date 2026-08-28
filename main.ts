@@ -384,8 +384,21 @@ avatarLibrary.loadAvatar(selectedAvatar.id).then((result) => {
     appearanceManager.setAvatarGroup(avatarMesh);
     animStateMachine.attach(avatarMesh);
 
+        // Brighten avatar materials (fix dark imports)
+    avatarMesh.traverse((child: any) => {
+      if (child.isMesh && child.material) {
+        const mats = Array.isArray(child.material) ? child.material : [child.material];
+        for (const mat of mats) {
+          if (mat.metalness !== undefined) mat.metalness = 0;
+          if (mat.roughness !== undefined) mat.roughness = 0.8;
+          if (mat.emissive) { mat.emissive.set(0x333333); mat.emissiveIntensity = 1.0; }
+          mat.needsUpdate = true;
+        }
+      }
+    });
     // Register with AVS (after multiplayer assigns session ID)
     const sessionId = networkManager.getSessionId();
+
     if (sessionId) {
       const variation = avatarVariationSystem.registerPlayer(sessionId, selectedAvatar.id);
       if (variation) {
