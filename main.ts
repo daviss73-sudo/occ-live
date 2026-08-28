@@ -171,6 +171,13 @@ function setupLighting(): void {
   });
   const sky = new THREE.Mesh(skyGeo, skyMat);
   scene.add(sky);
+    // Environment map so PBR materials (avatars) are properly lit
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  const envScene = new THREE.Scene();
+  envScene.background = new THREE.Color(0x404860);
+  const envTex = pmrem.fromScene(envScene, 0, 0.1, 100).texture;
+  scene.environment = envTex;
+
 }
 
 // ─── Ground Plane ────────────────────────────────────────────────────────────
