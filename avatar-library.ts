@@ -306,13 +306,34 @@ export class AvatarLibrary {
         tags: entry.tags,
       };
 
-      // Enable shadows on all meshes
+            // Enable shadows and correct materials for proper lighting
       scene.traverse((child) => {
         if ((child as THREE.Mesh).isMesh) {
-          child.castShadow = true;
-          child.receiveShadow = true;
+          const mesh = child as THREE.Mesh;
+          mesh.castShadow = true;
+          mesh.receiveShadow = true;
+
+          const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+          for (const mat of mats) {
+            const std = mat as THREE.MeshStandardMaterial;
+            // Ensure the base color texture is read as sRGB (fixes dark/dull color)
+            if (std.map) {
+              std.map.colorSpace = THREE.SRGBColorSpace;
+            }
+            // Lower metalness so skin/clothing isn't near-black without reflections
+            if (typeof std.metalness === 'number') {
+              std.metalness = Math.min(std.metalness, 0.1);
+            }
+            // Slight emissive lift so faces read even in shadow
+            if (std.emissive) {
+              std.emissive = new THREE.Color(0x222222);
+              std.emissiveIntensity = 1.0;
+            }
+            std.needsUpdate = true;
+          }
         }
       });
+
 
       // Cache the original (clones are derived from this)
       this.cache.set(entry.id, scene);
