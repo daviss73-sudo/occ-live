@@ -44,6 +44,8 @@ import type { ConsentPreferences } from './types/consent.ts';
 import { PhysicalInteractionTrigger } from './systems/physical-interaction-trigger.ts';
 import { showAvatarSelectionScreen } from './systems/avatar-selection-screen.ts';
 import { avatarCatalog } from './config/avatar-catalog.ts';
+import { EnergyWheelController } from './systems/energy-wheel-controller.ts';
+
 
 // ─── Part 5 Imports ──────────────────────────────────────────────────────────
 
@@ -779,6 +781,17 @@ networkManager.join(
 );
 
 console.log(`[OCC Live] Avatar: ${selectedAvatar.id}, Consent locked. Entering Main Union.`);
+  const energyWheel = new EnergyWheelController(scene);
+energyWheel.setCallbacks({
+  getPlayerPosition: () => playerController.getPosition(),
+  getSessionId: () => networkManager.getSessionId(),
+  broadcastReaction: (msg) => { console.log('[EnergyWheel] Reaction: ' + msg.reactionId); },
+  getCurrentZone: () => {
+    const zone = zoneManager.getPrimaryZone(playerController.getPosition());
+    return zone?.config.id ?? null;
+  },
+});
+
 
 // ─── HUD / UI ────────────────────────────────────────────────────────────────
 
@@ -971,6 +984,8 @@ function animate(): void {
 
   // Mini-game registry
   miniGameRegistry.update(dt);
+    energyWheel.update(dt);
+
 
   // ─── Part 7: Update Event System ───────────────────────────────────────
   eventManager.update(dt);
