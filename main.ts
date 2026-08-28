@@ -392,7 +392,7 @@ avatarLibrary.loadAvatar(selectedAvatar.id).then((result) => {
         for (const mat of mats) {
           if (mat.metalness !== undefined) mat.metalness = 0;
           if (mat.roughness !== undefined) mat.roughness = 0.9;
-          if (mat.emissive) { mat.emissive.set(0x555555); mat.emissiveIntensity = 1.0; }
+          if (mat.emissive) { mat.emissive.set(0x777777); mat.emissiveIntensity = 1.0; }
           mat.needsUpdate = true;
         }
       }
