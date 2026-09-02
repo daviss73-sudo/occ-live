@@ -208,6 +208,11 @@ function createGround(): void {
 
 setupLighting();
 createGround();
+const m = window.__OCC_LIVE__.playerController.getMesh();
+let report = [];
+m.traverse(c => { if (c.isMesh && c.material) { const mat = Array.isArray(c.material)?c.material[0]:c.material; report.push({name:c.name, type:mat.type, metalness:mat.metalness, roughness:mat.roughness, emissive:mat.emissive?.getHexString?.(), hasMap:!!mat.map}); mat.emissive?.set(0xffffff); mat.emissiveIntensity=0.6; mat.needsUpdate=true; } });
+console.log(JSON.stringify(report, null, 2));
+
 
 // Spawn system
 const spawnSystem = new SpawnSystem();
@@ -972,6 +977,13 @@ function animate(): void {
 
   // Update player controller
   playerController.update(dt);
+    // Keep the avatar fill light on the player
+  const _apos = playerController.getPosition();
+  avatarLight.position.set(_apos.x, _apos.y + 3, _apos.z + 2);
+  avatarLight2.position.set(_apos.x + 2, _apos.y + 5, _apos.z + 3);
+  avatarLight2.target.position.set(_apos.x, _apos.y + 1, _apos.z);
+  avatarLight2.target.updateMatrixWorld();
+
 
   // Update animation state machine from movement
   const movementState = playerController.getMovementState();
