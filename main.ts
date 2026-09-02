@@ -421,6 +421,27 @@ avatarLibrary.loadAvatar(selectedAvatar.id).then((result) => {
     console.warn(`[OCC Live] Failed to load avatar GLB, using placeholder: ${result.error}`);
   }
 });
+  
+// Brighten the rendered avatar after it loads (runs regardless of load path)
+setTimeout(() => {
+  const rm = playerController.getMesh();
+  if (rm) {
+    rm.traverse((child: any) => {
+      if (child.isMesh && child.material) {
+        const mats = Array.isArray(child.material) ? child.material : [child.material];
+        for (const mat of mats) {
+          if (mat.metalness !== undefined) mat.metalness = 0;
+          if (mat.roughness !== undefined) mat.roughness = 0.85;
+          if (mat.emissive) { mat.emissive.set(0x555555); mat.emissiveIntensity = 1.0; }
+          mat.needsUpdate = true;
+        }
+      }
+    });
+    console.log('[OCC Live] Avatar brightened');
+  }
+}, 3000);
+
+
 
 // ─── Part 5: Lazy River + Wetsuit Integration ────────────────────────────────
 
