@@ -208,6 +208,12 @@ function createGround(): void {
 
 setupLighting();
 createGround();
+// Dedicated avatar fill light — keeps the player's avatar well-lit in the dim world
+const avatarLight = new THREE.PointLight(0xffffff, 2.5, 12, 1.5);
+scene.add(avatarLight);
+const avatarLight2 = new THREE.DirectionalLight(0xffffff, 1.2);
+scene.add(avatarLight2);
+
 const m = window.__OCC_LIVE__.playerController.getMesh();
 let report = [];
 m.traverse(c => { if (c.isMesh && c.material) { const mat = Array.isArray(c.material)?c.material[0]:c.material; report.push({name:c.name, type:mat.type, metalness:mat.metalness, roughness:mat.roughness, emissive:mat.emissive?.getHexString?.(), hasMap:!!mat.map}); mat.emissive?.set(0xffffff); mat.emissiveIntensity=0.6; mat.needsUpdate=true; } });
