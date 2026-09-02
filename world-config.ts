@@ -44,7 +44,7 @@ export const worldConfig: WorldConfig = {
 
   // ─── Assets (placeholders until Meshy .glb imports) ──────────────────────
   assets: [
-     assets: [
+    
     { id: 'main_stage', type: 'architecture', file: 'https://pub-c8d7825ef99c46e28cb31aee23b53d38.r2.dev/main%20stage.gltf', position: [0, 0, -30], rotation: [0, 0, 0], scale: [15, 15, 15], zoneId: 'main_stage', enabled: true },
     { id: 'cafe', type: 'architecture', file: 'https://pub-c8d7825ef99c46e28cb31aee23b53d38.r2.dev/cafe.gltf', position: [-25, 0, -10], rotation: [0, 0, 0], scale: [15, 15, 15], zoneId: 'cafe_terrace', enabled: true },
     { id: 'beanbag_lawn', type: 'furniture', file: '/assets/world/main-union/furniture/beanbag-lawn.glb', position: [-15, 0, 5], rotation: [0, 0, 0], scale: [1, 1, 1], zoneId: 'beanbag_lawn', enabled: false },
@@ -56,7 +56,6 @@ export const worldConfig: WorldConfig = {
     { id: 'portal_skyline', type: 'portals', file: '/assets/world/main-union/portals/portal-skyline.glb', position: [-30, 0, -35], rotation: [0, 0.5, 0], scale: [1, 1, 1], zoneId: 'portal_skyline', enabled: false },
     { id: 'portal_pulse', type: 'portals', file: '/assets/world/main-union/portals/portal-pulse.glb', position: [30, 0, -35], rotation: [0, -0.5, 0], scale: [1, 1, 1], zoneId: 'portal_pulse', enabled: false },
     { id: 'wayfinding_sign', type: 'signage', file: '/assets/world/main-union/signage/wayfinding-sign.glb', position: [-10, 0, 10], rotation: [0, 0.3, 0], scale: [1, 1, 1], enabled: false },
-  ],
 
   ],
 
