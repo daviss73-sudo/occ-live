@@ -7,6 +7,8 @@
 
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+
 import type { AssetEntry, Vec3 } from '../types/index.ts';
 
 export class AssetRegistry {
@@ -16,8 +18,11 @@ export class AssetRegistry {
   private scene: THREE.Scene;
   private placed: Map<string, THREE.Object3D> = new Map();
 
-  constructor(scene: THREE.Scene) {
+    constructor(scene: THREE.Scene) {
     this.loader = new GLTFLoader();
+    const dracoLoader = new DRACOLoader();
+    dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.7/');
+    this.loader.setDRACOLoader(dracoLoader);
     this.scene = scene;
   }
 
