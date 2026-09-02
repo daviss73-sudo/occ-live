@@ -200,7 +200,7 @@ function createGround(): void {
 setupLighting();
 createGround();
 // Dedicated avatar fill light — keeps the player's avatar well-lit in the dim world
-const avatarLight = new THREE.PointLight(0xffffff, 2.5, 12, 1.5);
+const avatarLight = new THREE.PointLight(0xffffff, 4, 12, 1.5);
 scene.add(avatarLight);
 const avatarLight2 = new THREE.DirectionalLight(0xffffff, 1.2);
 scene.add(avatarLight2);
