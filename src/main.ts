@@ -199,6 +199,11 @@ function createGround(): void {
 
 setupLighting();
 createGround();
+// Dedicated avatar fill light — keeps the player's avatar well-lit in the dim world
+const avatarLight = new THREE.PointLight(0xffffff, 30, 12, 1.5);
+scene.add(avatarLight);
+const avatarLight2 = new THREE.DirectionalLight(0xffffff, 1.2);
+scene.add(avatarLight2);
 
 // Spawn system
 const spawnSystem = new SpawnSystem();
@@ -929,6 +934,11 @@ function animate(): void {
 
   // Update player controller
   playerController.update(dt);
+    const _apos = playerController.getPosition();
+  avatarLight.position.set(_apos.x, _apos.y + 3, _apos.z + 2);
+  avatarLight2.position.set(_apos.x + 2, _apos.y + 5, _apos.z + 3);
+  avatarLight2.target.position.set(_apos.x, _apos.y + 1, _apos.z);
+  avatarLight2.target.updateMatrixWorld();
 
   // Update animation state machine from movement
   const movementState = playerController.getMovementState();
