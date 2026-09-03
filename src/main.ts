@@ -212,7 +212,8 @@ spawnSystem.registerAll(worldConfig.spawnPoints);
 // Asset registry
 const assetRegistry = new AssetRegistry(scene);
 assetRegistry.registerAll(worldConfig.assets);
-assetRegistry.placeAllPlaceholders();
+assetRegistry.loadAll();
+
 
 // Zone manager
 const zoneManager = new ZoneManager(scene);
